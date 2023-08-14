@@ -1,14 +1,13 @@
 import * as React from 'react';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import {  CssBaseline, Box, AppBar, Typography, IconButton, Badge, Container, Grid, Paper, Toolbar } from '@mui/material';
-import NotificationsIcon from '@mui/icons-material/Notifications';
 import MaterialTable from './Table';
 
 function Copyright(props) {
   return (
     <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 5 }}>
       {'Copyright © '}
-      N5 Challenge JGDev
+      N5 Company
       {' '}
       {new Date().getFullYear()}
       {'.'}
@@ -27,7 +26,7 @@ function DashboardContent() {
         <AppBar position="absolute">
           <Toolbar
             sx={{
-              pr: '24px', // keep right padding when drawer closed
+              pr: '24px',
             }}
           >
             <Typography
@@ -37,13 +36,8 @@ function DashboardContent() {
               noWrap
               sx={{ flexGrow: 1, m: 2 }}
             >
-              N5 Challenge
+              N5 Company
             </Typography>
-            <IconButton color="inherit">
-              <Badge badgeContent={1} color="secondary">
-                <NotificationsIcon />
-              </Badge>
-            </IconButton>
           </Toolbar>
         </AppBar>
         <Box
@@ -51,7 +45,7 @@ function DashboardContent() {
           sx={{
             backgroundColor: (theme) =>
               theme.palette.mode === 'light'
-                ? theme.palette.grey[100]
+                ? theme.palette.grey[200]
                 : theme.palette.grey[900],
             flexGrow: 1,
             height: '100vh',

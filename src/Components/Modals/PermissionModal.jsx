@@ -6,12 +6,18 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import setRequest from '../../Utils/request';
 
+const defaultBody = {
+    nombreEmpleado: "",
+    apellidoEmpleado: "",
+    tipoPermiso: "",
+    fechaPermiso: new Date()
+}
+
 const style = {
     position: "absolute",
     top: "50%",
     left: "50%",
     transform: "translate(-50%, -50%)",
-    width: 400,
     bgcolor: "background.paper",
     borderRadius: "15px",
     border: "solid 1px",
@@ -22,13 +28,6 @@ const style = {
     pb: 3,
 }
 
-const defaultBody = {
-    employee_first_name: "",
-    employee_last_name: "",
-    permission_type_id: "",
-    permission_date: new Date(), 
-}
-
 const footerStyle = {
     marginTop: "3vh",
     textAlign: "center",
@@ -36,19 +35,19 @@ const footerStyle = {
 
 export default function PermissionModal({ open, isNew, handleClose, id }) {
 
-    const [data, setData] = useState({ ...defaultBody });
+    const [permission, setPermission] = useState({ ...defaultBody });
+    const [permissionTypes, setPermissionTypes] = useState([]);
     const [error, setError] = useState("");
-    const [ddlist, setDDList] = useState([]);
-
 
     const getData = async () => {
         try {
             if (!isNew && id) {
-                const { result } = await setRequest(`/api/v1/permission/findOne/${id}`, "get")
-                setData({ ...result, permission_date: new Date(result.permission_date) })
+                const result = await setRequest("/api/v1/permission", "get")
+                const permission = result.filter(x => x.id == id)[0]
+                setPermission(permission)
             }
-            const { result } = await setRequest(`/api/v1/permissiontype`, "get")
-            setDDList(result);
+            const result = await setRequest(`/api/v1/permissiontype`, "get")
+            setPermissionTypes(result);
         } catch (error) {
             setError(error.message)
         }
@@ -59,18 +58,18 @@ export default function PermissionModal({ open, isNew, handleClose, id }) {
     }, [])
 
     const handleChange = (event) => {
-        setData({ ...data, [event.target.name]: event.target.value });
+        setPermission({ ...permission, [event.target.name]: event.target.value });
     }
 
     const handleSubmit = async (event) => {
         try {
             if (!isNew && id) {
-                await setRequest(`/api/v1/permission`, "put", data)
+                await setRequest(`/api/v1/permission`, "put", permission)
                 handleClose()
                 return
             }
 
-            await setRequest(`/api/v1/permission`, "post", data)
+            await setRequest(`/api/v1/permission`, "post", permission)
             handleClose()
         } catch (error) {
             setError(error.message)
@@ -84,18 +83,18 @@ export default function PermissionModal({ open, isNew, handleClose, id }) {
             aria-labelledby="parent-modal-title"
             aria-describedby="parent-modal-description"
         >
-            <Box sx={{ ...style, width: 300 }}>
+            <Box sx={{ ...style, width: 400 }}>
                 <Typography id="parent-modal-title" variant="h6" color="#1976d2" sx={{ my: 2 }}>{isNew ? "Create Permission" : "Edit Permission"}</Typography>
                 {error && <Typography id="parent-modal-description" variant="h6" color="error">Error: {error}</Typography>}
                 <Grid container spacing={2}>
                     <Grid item xs={12} md={12}>
                         <Item>
                             <TextField
-                                id="employee_first_name"
-                                name="employee_first_name"
-                                label="Employee first name"
+                                id="nombreEmpleado"
+                                name="nombreEmpleado"
+                                label="First Name"
                                 variant="standard"
-                                value={data.employee_first_name}
+                                value={permission.nombreEmpleado}
                                 onChange={handleChange}
                             />
                         </Item>
@@ -103,23 +102,23 @@ export default function PermissionModal({ open, isNew, handleClose, id }) {
                     <Grid item xs={12} md={12}>
                         <Item>
                             <TextField
-                                id="employee_last_name"
-                                name="employee_last_name"
-                                label="Employee last name"
+                                id="apellidoEmpleado"
+                                name="apellidoEmpleado"
+                                label="Last Name"
                                 variant="standard"
-                                value={data.employee_last_name}
+                                value={permission.apellidoEmpleado}
                                 onChange={handleChange}
                             />
                         </Item>
                     </Grid>
-                    <Grid item xs={12} md={12}>
+                    {isNew && <Grid item xs={12} md={12}>
                         <Item>
                             <InputLabel id="permission-date">
                                 Permision Date
                             </InputLabel>
-                            <DatePicker  dateFormat="yyyy/MM/dd" selected={data.permission_date} onChange={(date) => handleChange({ target: { name: 'permission_date', value: date } })} />
+                            <DatePicker dateFormat="yyyy/MM/dd" selected={permission.fechaPermiso} onChange={(date) => handleChange({ target: { name: 'fechaPermiso', value: date } })} />
                         </Item>
-                    </Grid>
+                    </Grid> }
                     <Grid item xs={12}>
                         <Item>
                             <InputLabel id="permission-type">
@@ -127,22 +126,17 @@ export default function PermissionModal({ open, isNew, handleClose, id }) {
                             </InputLabel>
                             <Select
                                 labelId="permission-type-label"
-                                id="permission_type_id"
-                                name="permission_type_id"
-                                value={data.permission_type_id}
+                                id="tipoPermiso"
+                                name="tipoPermiso"
+                                value={permission.tipoPermiso}
                                 onChange={handleChange}
                                 variant="standard"
                                 sx={{ m: 1, minWidth: 200 }}
-
                             >
-                                <MenuItem value="">
-                                    <em>None</em>
-                                </MenuItem>
-                                {ddlist.map(({ description, id }) => (
-                                    <MenuItem value={id} key={description}>
-                                        {description}
-                                    </MenuItem>
-                                )
+                                {permissionTypes.map(({ descripcion, id }) => (
+                                    <MenuItem value={id} key={descripcion}>
+                                        {descripcion}
+                                    </MenuItem>)
                                 )}
                             </Select>
                         </Item>

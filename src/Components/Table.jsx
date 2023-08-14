@@ -3,12 +3,12 @@ import { Container, Button, Toolbar, Typography, TablePagination, Table, Badge, 
 import EditIcon from '@mui/icons-material/Edit';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import PermissionModal from './Modals/PermissionModal';
-import PermissionTypeModal from './Modals/PermisionTypeModal';
 import setRequest from "../Utils/request";
 
 export default function MaterialTable() {
 
-  const [data, setData] = useState([]);
+  const [permission, setPermission] = useState([]);
+  const [permissionTypes, setPermissionTypes] = useState([]);
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [open, setOpen] = useState(false);
@@ -18,8 +18,10 @@ export default function MaterialTable() {
 
   const getData = async () => {
     try {
-      const { result } = await setRequest(`/api/v1/permission`, "get")
-      setData(result);
+      const permissionResults = await setRequest(`/api/v1/permission`, "get")
+      setPermission(permissionResults);
+      const permissionTypesResult = await setRequest(`/api/v1/permissiontype`, "get")
+      setPermissionTypes(permissionTypesResult);
     } catch (error) {
       console.log( error.message );
     }
@@ -89,22 +91,25 @@ export default function MaterialTable() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => (
+            {/* {permission.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => ( */}
+            {permission.map((row) => (
               <TableRow key={row.id}>
                 <TableCell align="center">{
                   <IconButton aria-label="update" onClick={(event) => handleEditOpen(row.id)}>
                     <Tooltip title="Update Permission">
                       <EditIcon color="primary" />
                     </Tooltip>
-                  </IconButton>}</TableCell>
-                <TableCell align="center">{row.employee_first_name}</TableCell>
-                <TableCell align="center">{row.employee_last_name}</TableCell>
-                <TableCell align="center">{new Date(row.permission_date).toLocaleDateString()}</TableCell>
-                <TableCell align="center">{
-                  <Badge
-                    badgeContent={row.PermissionType.description} color='primary'
-                  />
-                }</TableCell>
+                  </IconButton>}
+                </TableCell>
+                <TableCell align="center">{row.nombreEmpleado}</TableCell>
+                <TableCell align="center">{row.apellidoEmpleado}</TableCell>
+                <TableCell align="center">{new Date(row.fechaPermiso).toLocaleDateString()}</TableCell>
+                <TableCell align="center">
+                  {<Badge
+                    badgeContent={permissionTypes.filter(x => x.id == row.tipoPermiso)[0]?.descripcion}
+                    color='primary'
+                  />}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -113,19 +118,15 @@ export default function MaterialTable() {
           <TablePagination
             rowsPerPageOptions={[5, 10, 25]}
             component="div"
-            count={data.length}
+            count={permission.length}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}
             onRowsPerPageChange={handleChangeRowsPerPage}
           />
-          <Tooltip title="Add New Permission Type for DDList">
-            <Button variant="outlined" sx={{ ml: 62.5 }} onClick={handleOpenType}> Create Type</Button>
-          </Tooltip>
         </Toolbar>
       </TableContainer>
       {open && (<PermissionModal open={open} handleClose={handleClose} isNew={isNew} id={id} />)}
-      {openType && (<PermissionTypeModal open={openType} handleCloseType={handleCloseType} />)}
     </Container>
   );
 }
